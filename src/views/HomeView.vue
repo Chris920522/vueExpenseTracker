@@ -40,16 +40,18 @@
       </ul>
     </div>
   </div>
-  <div v-if="showModal" class="modal-overlay">
-  <div class="modal-content">
-    <h2>新增{{ modalType }}類別</h2>
-    <input v-model="newCategory" placeholder="輸入新類別" />
-    <div class="modal-buttons">
-      <button @click="confirmAddCategory">確認</button>
-      <button @click="showModal = false">取消</button>
+  <transition name="modal-fade">
+    <div v-if="showModal" class="modal-overlay">
+      <div class="modal-content">
+        <h2>新增{{ modalType }}類別</h2>
+        <input v-model="newCategory" placeholder="輸入新類別" />
+        <div class="modal-buttons">
+          <button @click="confirmAddCategory">確認</button>
+          <button @click="showModal = false">取消</button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+  </transition>
 </template>
 
 <script setup>
@@ -103,7 +105,7 @@ onMounted(() => {
     customExpenseCategories.value = JSON.parse(savedExpenseCategories);
   }
 });
-
+//新增紀錄
 function addRecord() {
   if (name.value.trim() !== "") {
     const newRecord = {
@@ -125,7 +127,7 @@ function addRecord() {
     alert('請輸入事項')
   }
 }
-
+//刪除紀錄
 function deleteRecord(id) {
   const index = records.value.findIndex(record => record.id === id);
   if (index !== -1) {
@@ -133,17 +135,17 @@ function deleteRecord(id) {
     saveToStorage();
   }
 }
-
+//儲存到LocalStorage
 function saveToStorage() {
   localStorage.setItem('Records', JSON.stringify(records.value));
 }
-
+//開啟新增類別面板
 function openAddCategoryModal() {
   modalType.value = type.value;
   newCategory.value = '';
   showModal.value = true;
 }
-
+//新增類別
 function confirmAddCategory() {
   const trimmed = newCategory.value.trim();
   if (trimmed) {
@@ -173,7 +175,7 @@ const categoryOptions = computed(() => {
 watch(type, () => {
   category.value = type.value === '收入' ? '薪水' : '食';
 });
-
+//計算總額
 const total = computed(() => {
   return records.value.reduce((sum, record) => {
     const amount = Number(record.amount);
@@ -182,7 +184,6 @@ const total = computed(() => {
   }, 0);
 })
 </script>
-
 
 <style>
 .container {
@@ -274,4 +275,5 @@ const total = computed(() => {
   gap: 10px;
   justify-content: center;
 }
+
 </style>
