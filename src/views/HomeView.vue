@@ -1,5 +1,9 @@
 <template>
   <div class="container">
+    <div class="customBtn">
+      <button @click="openAddCategoryModal">新增自訂類別</button>
+      <button @click="openAddAccountModal">新增帳戶</button>
+    </div>
     <div class="inputGroup">
       <input v-model="date" type="date" placeholder="日期">
       <input v-model="time" type="time" placeholder="時間">
@@ -16,11 +20,11 @@
         </option>
       </select>
       <select v-model="account">
-        <option value="現金">現金</option>
-        <option value="銀行">銀行</option>
+        <option v-for="acc in accounts" :key="acc" :value="acc">
+          {{ acc }}
+        </option>
       </select>
       <button @click="addRecord">新增</button>
-      <button @click="openAddCategoryModal">新增自訂類別</button>
     </div>
     <span class="total" :style="{ color: total > 0 ? 'green' : total < 0 ? 'red' : 'black' }">餘額:{{ total }}</span>
     <div class="recordsList">
@@ -40,17 +44,47 @@
       </ul>
     </div>
   </div>
+  <!-- 新增類別面板切換 -->
   <transition name="modal-fade">
-    <div v-if="showModal" class="modal-overlay">
+    <div v-if="showCategoriesModal" class="modal-overlay">
       <div class="modal-content">
         <h2>新增{{ modalType }}類別</h2>
         <input v-model="newCategory" placeholder="輸入新類別" />
         <div class="modal-buttons">
           <button @click="confirmAddCategory">確認</button>
-          <button @click="showModal = false">取消</button>
+          <button @click="showCategoriesModal = false">取消</button>
         </div>
+        <ul class="item-list">
+          <li v-for="(item, index) in modalType === '收入' ? customIncomeCategories : customExpenseCategories" :key="index">
+            {{ item }}
+            <button @click="deleteCategory(index)">刪除</button>
+          </li>
+        </ul>
       </div>
     </div>
+  </transition>
+  <!-- 新增帳戶面板切換 -->
+  <transition name="modal-fade">
+    <div v-if="showAccountModal" class="modal-overlay">
+      <div class="modal-content">
+        <h2>新增{{ modalAccount }}帳戶</h2>
+        <input v-model="newAccount" placeholder="輸入新帳戶" />
+        <div class="modal-buttons">
+          <button @click="confirmAddAccount">確認</button>
+          <button @click="showAccountModal = false">取消</button>
+        </div>
+        <ul class="item-list">
+          <li v-for="(acc, index) in accounts" :key="index">
+            {{ acc }}
+            <button @click="deleteAccount(index)">刪除</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </transition>
+  <!-- 提示訊息 -->
+  <transition name="toast-fade">
+    <div v-if="showToast" class="toast">{{ toastMessage }}</div>
   </transition>
 </template>
 
@@ -67,15 +101,26 @@ const account = ref('現金');
 const records = ref([]);
 const customIncomeCategories = ref([]);
 const customExpenseCategories = ref([]);
-const showModal = ref(false);
+const showCategoriesModal = ref(false);
+const showAccountModal = ref(false);
 const newCategory = ref('');
+const newAccount = ref('');
 const modalType = ref('收入');
+const modalAccount = ref('');
+const accounts = ref(['現金', '銀行']); // 預設帳戶
+const toastMessage = ref('');
+const showToast = ref(false);
 
 
 onMounted(() => {
   const savedRecords = localStorage.getItem('Records');
   const savedIncomeCategories = localStorage.getItem('IncomeCategories');
   const savedExpenseCategories = localStorage.getItem('ExpenseCategories');
+  const savedAccounts = localStorage.getItem('Accounts');
+
+  if (savedAccounts) {
+    accounts.value = JSON.parse(savedAccounts);
+  }
 
   if (savedRecords) {
     const parsedRecords = JSON.parse(savedRecords);
@@ -143,7 +188,7 @@ function saveToStorage() {
 function openAddCategoryModal() {
   modalType.value = type.value;
   newCategory.value = '';
-  showModal.value = true;
+  showCategoriesModal.value = true;
 }
 //新增類別
 function confirmAddCategory() {
@@ -160,18 +205,57 @@ function confirmAddCategory() {
         localStorage.setItem('ExpenseCategories', JSON.stringify(customExpenseCategories.value));
       }
     }
-    showModal.value = false;
+    showCategoriesModal.value = false;
   } else {
     alert('請輸入有效的類別名稱');
   }
 }
+//刪除類別
+function deleteCategory(index) {
+  if (modalType.value === '收入') {
+    customIncomeCategories.value.splice(index, 1);
+    localStorage.setItem('IncomeCategories', JSON.stringify(customIncomeCategories.value));
+  } else {
+    customExpenseCategories.value.splice(index, 1);
+    localStorage.setItem('ExpenseCategories', JSON.stringify(customExpenseCategories.value));
+  }
+}
+//開啟新增帳戶面板
+function openAddAccountModal() {
+  modalAccount.value = '';
+  newAccount.value = '';
+  showAccountModal.value = true;
+  showTempToast('新增類別成功！');
+}
+//新增帳戶
+function confirmAddAccount() {
+  const trimmed = newAccount.value.trim();
+  if (trimmed) {
+    if (!accounts.value.includes(trimmed)) {
+      accounts.value.push(trimmed);
+      localStorage.setItem('Accounts', JSON.stringify(accounts.value));
+      showTempToast('新增帳戶成功！');
+    } else {
+      alert('帳戶已存在！');
+    }
+    showAccountModal.value = false;
+  } else {
+    alert('請輸入有效的帳戶名稱');
+  }
 
+}
+//刪除帳戶
+function deleteAccount(index) {
+  accounts.value.splice(index, 1);
+  localStorage.setItem('Accounts', JSON.stringify(accounts.value));
+}
+//類別選項列表
 const categoryOptions = computed(() => {
   return type.value === '收入'
     ? ['薪水', '獎金', ...customIncomeCategories.value]
     : ['食', '衣', '住', '行', '育', '樂', ...customExpenseCategories.value];
 });
-
+//切換收入、支出類別顯示
 watch(type, () => {
   category.value = type.value === '收入' ? '薪水' : '食';
 });
@@ -183,6 +267,14 @@ const total = computed(() => {
     return record.type === '收入' ? sum + amount : sum - amount;
   }, 0);
 })
+//提示訊息
+function showTempToast(message) {
+  toastMessage.value = message;
+  showToast.value = true;
+  setTimeout(() => {
+    showToast.value = false;
+  }, 2000); // 顯示2秒
+}
 </script>
 
 <style>
@@ -276,4 +368,51 @@ const total = computed(() => {
   justify-content: center;
 }
 
+.customBtn {
+  display: flex;
+  gap: 10px;
+  padding: 10px 20px;
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-fade-enter-to,
+.modal-fade-leave-from {
+  opacity: 1;
+}
+
+.toast-fade-enter-active,
+.toast-fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.toast-fade-enter-from,
+.toast-fade-leave-to {
+  opacity: 0;
+}
+
+.toast-fade-enter-to,
+.toast-fade-leave-from {
+  opacity: 1;
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #444;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
 </style>
