@@ -1,91 +1,95 @@
 <template>
-  <div class="container">
-    <div class="customBtn">
-      <button @click="openAddCategoryModal">新增自訂類別</button>
-      <button @click="openAddAccountModal">新增帳戶</button>
+  <div class="min-h-screen bg-gray-950">
+    <div class="flex justify-evenly pb-10">
+      <button class="border-solid rounded-md bg-green-300 p-2" @click="openAddCategoryModal">新增自訂類別</button>
+      <button class="border-solid rounded-md bg-green-300 p-2" @click="openAddAccountModal">新增帳戶</button>
     </div>
-    <div class="inputGroup">
-      <input v-model="date" type="date" placeholder="日期">
-      <input v-model="time" type="time" placeholder="時間">
-      <input v-model="amount" type="number" placeholder="金額">
-      <select v-model="type">
-        <option value="收入">收入</option>
-        <option value="支出">支出</option>
-      </select>
-      <input v-model="name" type="text" placeholder="項目名稱">
-      <select v-model="category">
-        <option value="">類型</option>
-        <option v-for="option in categoryOptions" :key="option" :value="option">
-          {{ option }}
-        </option>
-      </select>
-      <select v-model="account">
-        <option v-for="acc in accounts" :key="acc" :value="acc">
-          {{ acc }}
-        </option>
-      </select>
-      <button @click="addRecord">新增</button>
-    </div>
-    <span class="total" :style="{ color: total > 0 ? 'green' : total < 0 ? 'red' : 'black' }">餘額:{{ total }}</span>
-    <div class="recordsList">
-      <ul>
-        <li v-for="record in records" :key="record.id">
-          <div class="record">
-            <span> 日期:{{ record.date }} </span>
-            <span :class="record.type === '收入' ? 'amount-income' : 'amount-expense'"> 金額:{{ record.type === '收入' ? '+'
-              : '-' }}{{ record.amount }} </span>
-            <span> 類型:{{ record.type }} </span>
-            <span> 項目名稱:{{ record.name }} </span>
-            <span> 類別:{{ record.category }} </span>
-            <span>帳戶:{{ record.account }}</span>
-            <button @click="deleteRecord(record.id)">刪除</button>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
-  <!-- 新增類別面板切換 -->
-  <transition name="modal-fade">
-    <div v-if="showCategoriesModal" class="modal-overlay">
-      <div class="modal-content">
-        <h2>新增{{ modalType }}類別</h2>
-        <input v-model="newCategory" placeholder="輸入新類別" />
-        <div class="modal-buttons">
-          <button @click="confirmAddCategory">確認</button>
-          <button @click="showCategoriesModal = false">取消</button>
-        </div>
-        <ul class="item-list">
-          <li v-for="(item, index) in modalType === '收入' ? customIncomeCategories : customExpenseCategories" :key="index">
-            {{ item }}
-            <button @click="deleteCategory(index)">刪除</button>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </transition>
-  <!-- 新增帳戶面板切換 -->
-  <transition name="modal-fade">
-    <div v-if="showAccountModal" class="modal-overlay">
-      <div class="modal-content">
-        <h2>新增{{ modalAccount }}帳戶</h2>
-        <input v-model="newAccount" placeholder="輸入新帳戶" />
-        <div class="modal-buttons">
-          <button @click="confirmAddAccount">確認</button>
-          <button @click="showAccountModal = false">取消</button>
-        </div>
-        <ul class="item-list">
-          <li v-for="(acc, index) in accounts" :key="index">
+    <div>
+      <div class="flex justify-center items-center gap-5 bg-slate-200 border-solid rounded-md w-fit mx-auto p-5">
+        <input v-model="date" type="date" placeholder="日期" class="p-2 border-solid rounded-md bg-gray-400">
+        <input v-model="time" type="time" placeholder="時間" class="p-2 border-solid rounded-md bg-gray-400">
+        <input v-model="amount" type="number" placeholder="金額" class="p-2 border-solid rounded-md bg-gray-400">
+        <select v-model="type" class="p-2 border-solid rounded-md bg-gray-400">
+          <option value="收入">收入</option>
+          <option value="支出">支出</option>
+        </select>
+        <input v-model="name" type="text" placeholder="項目名稱" class="p-2 border-solid rounded-md bg-gray-400">
+        <select v-model="category" class="p-2 border-solid rounded-md bg-gray-400">
+          <option value="">類型</option>
+          <option v-for="option in categoryOptions" :key="option" :value="option">
+            {{ option }}
+          </option>
+        </select>
+        <select v-model="account" class="p-2 border-solid rounded-md bg-gray-400">
+          <option v-for="acc in accounts" :key="acc" :value="acc">
             {{ acc }}
-            <button @click="deleteAccount(index)">刪除</button>
+          </option>
+        </select>
+        <button @click="addRecord" class="p-2 border-solid rounded-md bg-gray-400 hover:bg-slate-600">新增</button>
+      </div>
+      <span class="flex justify-center content-center p-3 text-2xl"
+        :style="{ color: total > 0 ? 'green' : total < 0 ? 'red' : 'white' }">餘額:{{ total }}</span>
+      <div >
+        <ul>
+          <li v-for="record in records" :key="record.id">
+            <div class="flex justify-center items-center gap-4 bg-slate-200 border-solid rounded-md w-fit mx-auto p-5 ">
+              <span> 日期:{{ record.date }} </span>
+              <span :class="record.type === '收入' ? 'amount-income' : 'amount-expense'"> 金額:{{ record.type === '收入' ? '+'
+                : '-' }}{{ record.amount }} </span>
+              <span> 類型:{{ record.type }} </span>
+              <span> 項目名稱:{{ record.name }} </span>
+              <span> 類別:{{ record.category }} </span>
+              <span>帳戶:{{ record.account }}</span>
+              <button class="p-3 border-solid rounded-md bg-gray-400 hover:bg-slate-600" @click="deleteRecord(record.id)">刪除</button>
+            </div>
           </li>
         </ul>
       </div>
     </div>
-  </transition>
-  <!-- 提示訊息 -->
-  <transition name="toast-fade">
-    <div v-if="showToast" class="toast">{{ toastMessage }}</div>
-  </transition>
+    <!-- 新增類別面板切換 -->
+    <transition name="modal-fade">
+      <div v-if="showCategoriesModal" class="flex justify-center items-center">
+        <div class="modal-content">
+          <h2>新增{{ modalType }}類別</h2>
+          <input v-model="newCategory" placeholder="輸入新類別" />
+          <div class="modal-buttons">
+            <button @click="confirmAddCategory">確認</button>
+            <button @click="showCategoriesModal = false">取消</button>
+          </div>
+          <ul class="item-list">
+            <li v-for="(item, index) in modalType === '收入' ? customIncomeCategories : customExpenseCategories"
+              :key="index">
+              {{ item }}
+              <button @click="deleteCategory(index)">刪除</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </transition>
+    <!-- 新增帳戶面板切換 -->
+    <transition name="modal-fade">
+      <div v-if="showAccountModal" class="flex justify-center items-center">
+        <div class="modal-content">
+          <h2>新增{{ modalAccount }}帳戶</h2>
+          <input v-model="newAccount" placeholder="輸入新帳戶" />
+          <div class="modal-buttons">
+            <button @click="confirmAddAccount">確認</button>
+            <button @click="showAccountModal = false">取消</button>
+          </div>
+          <ul class="item-list">
+            <li v-for="(acc, index) in accounts" :key="index">
+              {{ acc }}
+              <button @click="deleteAccount(index)">刪除</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </transition>
+    <!-- 提示訊息 -->
+    <transition name="toast-fade">
+      <div v-if="showToast" class="toast">{{ toastMessage }}</div>
+    </transition>
+  </div>
 </template>
 
 <script setup>
@@ -276,143 +280,3 @@ function showTempToast(message) {
   }, 2000); // 顯示2秒
 }
 </script>
-
-<style>
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-
-.inputGroup {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-  margin-bottom: 24px;
-}
-
-.recordsList ul {
-  list-style: none
-}
-
-.recordsList li {
-  width: 90%;
-  margin-bottom: 16px;
-  padding: 12px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-}
-
-.record {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  width: 100%;
-  justify-content: center;
-}
-
-.recordsList span {
-  min-width: 120px;
-  margin-right: 5%;
-  /* 控制每個資訊之間的間距 */
-  display: inline-block;
-}
-
-.amount-income {
-  color: green;
-  font-weight: bold;
-}
-
-.amount-expense {
-  color: red;
-  font-weight: bold;
-}
-
-.total,
-.bankAmount {
-  font-size: 25px;
-  font-family: 'Times New Roman', Times, serif;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-
-.modal-content {
-  background: white;
-  padding: 20px 30px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  min-width: 300px;
-  text-align: center;
-}
-
-.modal-buttons {
-  margin-top: 15px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.customBtn {
-  display: flex;
-  gap: 10px;
-  padding: 10px 20px;
-}
-
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-
-.modal-fade-enter-to,
-.modal-fade-leave-from {
-  opacity: 1;
-}
-
-.toast-fade-enter-active,
-.toast-fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.toast-fade-enter-from,
-.toast-fade-leave-to {
-  opacity: 0;
-}
-
-.toast-fade-enter-to,
-.toast-fade-leave-from {
-  opacity: 1;
-}
-
-.toast {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: #444;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-}
-</style>
