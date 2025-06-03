@@ -29,18 +29,20 @@
       </div>
       <span class="flex justify-center content-center p-3 text-2xl"
         :style="{ color: total > 0 ? 'green' : total < 0 ? 'red' : 'white' }">餘額:{{ total }}</span>
-      <div >
+      <div>
         <ul>
           <li v-for="record in records" :key="record.id">
-            <div class="flex justify-center items-center gap-4 bg-slate-200 border-solid rounded-md w-fit mx-auto p-5 ">
-              <span> 日期:{{ record.date }} </span>
-              <span :class="record.type === '收入' ? 'amount-income' : 'amount-expense'"> 金額:{{ record.type === '收入' ? '+'
+            <div
+              class="flex justify-center items-center gap-4 bg-slate-200 border-solid rounded-md w-fit mx-auto p-5 mb-4">
+              <span class="w-32"> 日期:{{ record.date }} </span>
+              <span class="w-32"> 金額:{{ record.type === '收入' ? '+'
                 : '-' }}{{ record.amount }} </span>
-              <span> 類型:{{ record.type }} </span>
-              <span> 項目名稱:{{ record.name }} </span>
-              <span> 類別:{{ record.category }} </span>
-              <span>帳戶:{{ record.account }}</span>
-              <button class="p-3 border-solid rounded-md bg-gray-400 hover:bg-slate-600" @click="deleteRecord(record.id)">刪除</button>
+              <span class="w-32"> 類型:{{ record.type }} </span>
+              <span class="w-32"> 項目名稱:{{ record.name }} </span>
+              <span class="w-32"> 類別:{{ record.category }} </span>
+              <span class="w-32">帳戶:{{ record.account }}</span>
+              <button class="p-3 border-solid rounded-md bg-gray-400 hover:bg-slate-600"
+                @click="deleteRecord(record.id)">刪除</button>
             </div>
           </li>
         </ul>
@@ -279,4 +281,5 @@ function showTempToast(message) {
     showToast.value = false;
   }, 2000); // 顯示2秒
 }
+
 </script>

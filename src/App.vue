@@ -1,16 +1,17 @@
-<!-- App.vue -->
 <template>
   <div>
-    <nav>
-      <router-link to="/">首頁</router-link> |
-      <router-link to="/cash">現金帳戶</router-link> |
-      <router-link to="/bank">銀行帳戶</router-link>
-    </nav>
+    <button @click="sidebar.open()" class="fixed top-4 right-4 z-50 bg-blue-500 text-white px-4 py-2 rounded-md">
+      ☰
+    </button>
 
-    <!-- 這裡就是路由切換顯示區域 -->
+    <Sidebar ref="sidebar" />
     <router-view />
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import Sidebar from './components/sideBar.vue' // ← 正確引用
+
+const sidebar = ref(null)
 </script>
