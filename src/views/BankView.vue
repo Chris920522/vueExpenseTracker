@@ -5,7 +5,7 @@
       <h2 class="text-white">銀行帳戶紀錄</h2>
     </div>
     <span class="flex justify-center content-center p-3 text-2xl"
-        :style="{ color: total > 0 ? 'green' : total < 0 ? 'red' : 'white' }">餘額:{{ total }}</span>
+        :style="{ color: total > 0 ? 'green' : total < 0 ? 'red' : 'white' }">餘額:{{ bankAmount }}</span>
     <div class="recordsList">
       <ul>
         <li v-for="record in bankRecords" :key="record.id">
