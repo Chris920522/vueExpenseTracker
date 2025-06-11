@@ -30,15 +30,45 @@
           <li v-for="record in records" :key="record.id">
             <div
               class="flex justify-center items-center gap-4 bg-slate-200 border-solid rounded-md w-fit mx-auto p-5 mb-4">
-              <span class="w-32"> 日期:{{ record.date }} </span>
-              <span class="w-32"> 金額:{{ record.type === '收入' ? '+'
-                : '-' }}{{ record.amount }} </span>
-              <span class="w-32"> 類型:{{ record.type }} </span>
-              <span class="w-32"> 項目名稱:{{ record.name }} </span>
-              <span class="w-32"> 類別:{{ record.category }} </span>
+              <span v-if="editingId !== record.id" class="w-32"> 日期:{{ record.date }} </span>
+              <!-- 如果編輯中，則顯示編輯框，editingId不等於record.id就是沒在編輯 -->
+              <input v-else v-model="editForm.date" type="date" class="w-32 p-2 border-solid rounded-md bg-gray-400">
+              
+              <span v-if="editingId !== record.id" class="w-32"> 金額:{{ record.type === '收入' ? '+' : '-' }}{{ record.amount }} </span>
+              <input v-else v-model="editForm.amount" type="number" class="w-32 p-2 border-solid rounded-md bg-gray-400">
+              
+              <span v-if="editingId !== record.id" class="w-32"> 類型:{{ record.type }} </span>
+              <select v-else v-model="editForm.type" class="w-32 p-2 border-solid rounded-md bg-gray-400">
+                <option value="收入">收入</option>
+                <option value="支出">支出</option>
+              </select>
+              
+              <span v-if="editingId !== record.id" class="w-32"> 項目名稱:{{ record.name }} </span>
+              <input v-else v-model="editForm.name" type="text" class="w-32 p-2 border-solid rounded-md bg-gray-400">
+              
+              <span v-if="editingId !== record.id" class="w-32"> 類別:{{ record.category }} </span>
+              <select v-else v-model="editForm.category" class="w-32 p-2 border-solid rounded-md bg-gray-400">
+                <option v-for="option in categoryOptions" :key="option" :value="option">
+                  {{ option }}
+                </option>
+              </select>
+              
               <span class="w-32">帳戶:{{ record.account }}</span>
-              <button class="p-3 border-solid rounded-md bg-gray-400 hover:bg-slate-600"
-                @click="deleteRecord(record.id)">刪除</button>
+              
+              <div class="flex gap-2">
+                <button v-if="editingId !== record.id" 
+                  class="p-3 border-solid rounded-md bg-gray-400 hover:bg-slate-600"
+                  @click="startEdit(record)">編輯</button>
+                <button v-else 
+                  class="p-3 border-solid rounded-md bg-green-400 hover:bg-green-600"
+                  @click="saveEdit(record.id)">儲存</button>
+                <button v-if="editingId !== record.id"
+                  class="p-3 border-solid rounded-md bg-gray-400 hover:bg-slate-600"
+                  @click="deleteRecord(record.id)">刪除</button>
+                <button v-else
+                  class="p-3 border-solid rounded-md bg-red-400 hover:bg-red-600"
+                  @click="cancelEdit">取消</button>
+              </div>
             </div>
           </li>
         </ul>
@@ -49,7 +79,9 @@
 
 <script setup>
 import { onMounted, ref, computed, watch } from 'vue';
+import { useStore } from '@/stores/store';
 
+const store = useStore();
 const date = ref('');
 const amount = ref('');
 const type = ref('收入');
@@ -65,6 +97,18 @@ const accounts = ref(['現金', '銀行']); // 預設帳戶
 const toastMessage = ref('');
 const showToast = ref(false);
 
+// 編輯相關的狀態
+//追蹤編輯的資料
+const editingId = ref(null);
+//編輯的表單
+const editForm = ref({
+  date: '',
+  time: '',
+  amount: '',
+  type: '收入',
+  name: '',
+  category: '',
+});
 
 onMounted(() => {
   const savedRecords = localStorage.getItem('Records');
@@ -104,6 +148,12 @@ onMounted(() => {
     customExpenseCategories.value = JSON.parse(savedExpenseCategories);
   }
 });
+
+// 監聽 store 中的帳戶變化
+watch(() => store.accounts, (newAccounts) => {
+  accounts.value = newAccounts;
+}, { deep: true });
+
 //新增紀錄
 function addRecord() {
   if (name.value.trim() !== "") {
@@ -126,6 +176,7 @@ function addRecord() {
     alert('請輸入事項')
   }
 }
+
 //刪除紀錄
 function deleteRecord(id) {
   const index = records.value.findIndex(record => record.id === id);
@@ -134,45 +185,75 @@ function deleteRecord(id) {
     saveToStorage();
   }
 }
+
 //儲存到LocalStorage
 function saveToStorage() {
   localStorage.setItem('Records', JSON.stringify(records.value));
 }
 
-//刪除類別
-function deleteCategory(index) {
-  if (modalType.value === '收入') {
-    customIncomeCategories.value.splice(index, 1);
-    localStorage.setItem('IncomeCategories', JSON.stringify(customIncomeCategories.value));
-  } else {
-    customExpenseCategories.value.splice(index, 1);
-    localStorage.setItem('ExpenseCategories', JSON.stringify(customExpenseCategories.value));
-  }
-}
 
-//刪除帳戶
-function deleteAccount(index) {
-  accounts.value.splice(index, 1);
-  localStorage.setItem('Accounts', JSON.stringify(accounts.value));
-}
 //類別選項列表
 const categoryOptions = computed(() => {
   return type.value === '收入'
     ? ['薪水', '獎金', ...customIncomeCategories.value]
     : ['食', '衣', '住', '行', '育', '樂', ...customExpenseCategories.value];
 });
+
 //切換收入、支出類別顯示
 watch(type, () => {
   category.value = type.value === '收入' ? '薪水' : '食';
 });
+
+// 開始編輯
+function startEdit(record) {
+  editingId.value = record.id;
+  editForm.value = {
+    date: record.date,
+    time: record.time,
+    amount: record.amount,
+    type: record.type,
+    name: record.name,
+    category: record.category,
+  };
+}
+
+// 儲存編輯
+function saveEdit(id) {
+  if (editForm.value.name.trim() === "") {
+    alert('請輸入事項');
+    return;
+  }
+
+  const index = records.value.findIndex(r => r.id === id);
+  if (index !== -1) {
+    records.value[index] = {
+      ...records.value[index],
+      date: editForm.value.date,
+      time: editForm.value.time,
+      amount: Number(editForm.value.amount),
+      type: editForm.value.type,
+      name: editForm.value.name,
+      category: editForm.value.category,
+    };
+    saveToStorage();
+  }
+  editingId.value = null;
+}
+
+// 取消編輯
+function cancelEdit() {
+  editingId.value = null;
+}
+
 //計算總額
 const total = computed(() => {
   return records.value.reduce((sum, record) => {
     const amount = Number(record.amount);
-    if (isNaN(amount)) return sum; // 忽略無效金額
+    if (isNaN(amount)) return sum;
     return record.type === '收入' ? sum + amount : sum - amount;
   }, 0);
-})
+});
+
 //提示訊息
 function showTempToast(message) {
   toastMessage.value = message;
@@ -181,5 +262,4 @@ function showTempToast(message) {
     showToast.value = false;
   }, 2000); // 顯示2秒
 }
-
 </script>

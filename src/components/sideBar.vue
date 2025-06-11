@@ -9,21 +9,33 @@
       <button @click="close" class="text-xl font-bold">&times;</button>
     </div>
     <nav class="flex flex-col gap-4 p-4">
-      <RouterLink to="/" @click="close" class="hover:bg-slate-600">全部紀錄</RouterLink>
-      <RouterLink to="/cash" @click="close" class="hover:bg-slate-600">現金帳戶</RouterLink>
-      <RouterLink to="/bank" @click="close" class="hover:bg-slate-600">銀行帳戶</RouterLink>
+      <RouterLink to="/account" @click="close" class="hover:bg-slate-600">全部紀錄</RouterLink>
+      <RouterLink v-for="account in store.accounts" 
+                 :key="account"
+                 :to="'/account/' + account" 
+                 @click="close" 
+                 class="hover:bg-slate-600">
+        {{ account }}帳戶
+      </RouterLink>
     </nav>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-// 控制背景變色
+import { ref, onMounted } from 'vue';
+import { useStore } from '@/stores/store';
+
+const store = useStore();
 const isOpen = ref(false);
-// 伸縮攔開關
+
+onMounted(() => {
+  store.loadFromlocal();
+});
+
 function open() {
   isOpen.value = true;
 }
+
 function close() {
   isOpen.value = false;
 }
