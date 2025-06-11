@@ -31,6 +31,7 @@
         </option>
       </select>
       <button @click="addRecord" class="p-2 border-solid rounded-md bg-gray-400 hover:bg-slate-600">新增</button>
+      <button @click="openCategoryManager" class="p-2 border-solid rounded-md bg-gray-400 hover:bg-slate-600">管理類別</button>
     </div>
 
     <!-- 紀錄列表 -->
@@ -81,12 +82,21 @@
       </ul>
     </div>
   </div>
+
+  <!-- 類別管理組件 -->
+  <CategoryManager
+    v-model:isOpen="isCategoryManagerOpen"
+    v-model:incomeCategories="customIncomeCategories"
+    v-model:expenseCategories="customExpenseCategories"
+  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from '@/stores/store';
+import CategoryManager from '@/components/CategoryManager.vue';
+
 const store = useStore();
 const route = useRoute();
 const accountRecords = ref([]);
@@ -115,6 +125,8 @@ const editForm = ref({
   category: '',
 });
 
+const isCategoryManagerOpen = ref(false);
+
 onMounted(() => {
   loadRecords();
   loadCategories();
@@ -133,10 +145,17 @@ function loadRecords() {
   const saved = localStorage.getItem('Records');
   if (saved) {
     const allRecords = JSON.parse(saved);
+    // 根據日期和時間排序，最近的日期顯示在最上面
+    const sortedRecords = allRecords.sort((a, b) => {
+      const dateA = new Date(`${a.date} ${a.time || '00:00'}`);
+      const dateB = new Date(`${b.date} ${b.time || '00:00'}`);
+      return dateB - dateA;
+    });
+    //先對所有記錄進行排序，再根據帳戶名稱篩選
     if (accountName.value === '全部') {
-      accountRecords.value = allRecords;
+      accountRecords.value = sortedRecords;
     } else {
-      accountRecords.value = allRecords.filter(r => r.account === accountName.value);
+      accountRecords.value = sortedRecords.filter(r => r.account === accountName.value);
     }
   }
 }
@@ -281,4 +300,14 @@ const accountTotal = computed(() => {
     return record.type === '收入' ? sum + amount : sum - amount;
   }, 0);
 });
+
+function openCategoryManager() {
+  isCategoryManagerOpen.value = true;
+}
+
+// 監聽類別變化並保存到 localStorage
+watch([customIncomeCategories, customExpenseCategories], () => {
+  localStorage.setItem('IncomeCategories', JSON.stringify(customIncomeCategories.value));
+  localStorage.setItem('ExpenseCategories', JSON.stringify(customExpenseCategories.value));
+}, { deep: true });
 </script>
