@@ -1,80 +1,98 @@
 <template>
-  <div class="min-h-screen bg-gray-950">
+  <div class="min-h-screen bg-gray-950 p-4">
     <div class="flex justify-center content-center">
-      <h2 class="text-white">{{ accountName }}帳戶紀錄</h2>
+      <h2 class="text-white text-xl md:text-2xl">{{ accountName }}帳戶紀錄</h2>
     </div>
-    <span class="flex justify-center content-center p-3 text-2xl"
+    <span class="flex justify-center content-center p-3 text-xl md:text-2xl"
       :style="{ color: accountTotal > 0 ? 'green' : accountTotal < 0 ? 'red' : 'white' }">
       餘額:{{ accountTotal }}
     </span>
 
     <!-- 輸入表單 -->
-    <div class="flex justify-center items-center gap-5 bg-slate-200 border-solid rounded-md w-fit mx-auto p-5 mb-5">
-      <input v-model="date" type="date" placeholder="日期" class="p-2 border-solid rounded-md bg-gray-400 placeholder:text-gray-500">
-      <input v-model="time" type="time" placeholder="時間" class="p-2 border-solid rounded-md bg-gray-400 placeholder:text-gray-500">
-      <input v-model="amount" type="number" placeholder="金額" class="p-2 border-solid rounded-md bg-gray-400 placeholder:text-gray-500">
-      <select v-model="type" class="p-2 border-solid rounded-md bg-gray-400">
-        <option value="收入">收入</option>
-        <option value="支出">支出</option>
-      </select>
-      <input v-model="name" type="text" placeholder="項目名稱" class="p-2 border-solid rounded-md bg-gray-400 placeholder:text-gray-500">
-      <select v-model="category" class="p-2 border-solid rounded-md bg-gray-400">
-        <option value="">類型</option>
-        <option v-for="option in categoryOptions" :key="option" :value="option">
-          {{ option }}
-        </option>
-      </select>
-      <!-- 在全部頁面顯示帳戶選擇 -->
-      <select v-if="accountName === '全部'" v-model="selectedAccount" class="p-2 border-solid rounded-md bg-gray-400">
-        <option v-for="account in store.accounts" :key="account" :value="account">
-          {{ account }}
-        </option>
-      </select>
-      <button @click="addRecord" class="p-2 border-solid rounded-md bg-gray-400 hover:bg-slate-600">新增</button>
-      <button @click="openCategoryManager" class="p-2 border-solid rounded-md bg-gray-400 hover:bg-slate-600">管理類別</button>
+    <div class="flex flex-col md:flex-row justify-center items-center gap-3 bg-slate-200 border-solid rounded-md w-full md:w-fit mx-auto p-4 mb-5">
+      <div class="grid grid-cols-2 md:flex gap-3 w-full md:w-auto">
+        <input v-model="date" type="date" placeholder="日期" class="p-2 border-solid rounded-md bg-gray-400 placeholder:text-gray-500 w-full">
+        <input v-model="time" type="time" placeholder="時間" class="p-2 border-solid rounded-md bg-gray-400 placeholder:text-gray-500 w-full">
+        <input v-model="amount" type="number" placeholder="金額" class="p-2 border-solid rounded-md bg-gray-400 placeholder:text-gray-500 w-full">
+        <select v-model="type" class="p-2 border-solid rounded-md bg-gray-400 w-full">
+          <option value="收入">收入</option>
+          <option value="支出">支出</option>
+        </select>
+        <input v-model="name" type="text" placeholder="項目名稱" class="p-2 border-solid rounded-md bg-gray-400 placeholder:text-gray-500 w-full">
+        <select v-model="category" class="p-2 border-solid rounded-md bg-gray-400 w-full">
+          <option value="">類型</option>
+          <option v-for="option in categoryOptions" :key="option" :value="option">
+            {{ option }}
+          </option>
+        </select>
+        <!-- 在全部頁面顯示帳戶選擇 -->
+        <select v-if="accountName === '全部'" v-model="selectedAccount" class="p-2 border-solid rounded-md bg-gray-400 w-full">
+          <option v-for="account in store.accounts" :key="account" :value="account">
+            {{ account }}
+          </option>
+        </select>
+      </div>
+      <div class="flex gap-2 w-full md:w-auto">
+        <button @click="addRecord" class="p-2 border-solid rounded-md bg-gray-400 hover:bg-slate-600 w-full md:w-auto">新增</button>
+        <button @click="openCategoryManager" class="p-2 border-solid rounded-md bg-gray-400 hover:bg-slate-600 w-full md:w-auto">管理類別</button>
+      </div>
     </div>
 
     <!-- 紀錄列表 -->
-    <div>
-      <ul>
+    <div class="w-full overflow-x-auto">
+      <ul class="w-full">
         <li v-for="record in accountRecords" :key="record.id">
-          <div class="flex justify-center items-center gap-4 bg-slate-200 border-solid rounded-md w-fit mx-auto p-5 mb-4">
-            <span v-if="editingId !== record.id" class="w-32"> 日期:{{ record.date }} </span>
-            <input v-else v-model="editForm.date" type="date" class="w-32 p-2 border-solid rounded-md bg-gray-400">
+          <div class="flex flex-col md:flex-row justify-center items-center gap-3 bg-slate-200 border-solid rounded-md w-full md:w-fit mx-auto p-4 mb-4">
+            <div class="grid grid-cols-2 md:flex gap-3 w-full md:w-auto">
+              <div class="flex flex-col">
+                <span v-if="editingId !== record.id" class="w-full md:w-32"> 日期:{{ record.date }} </span>
+                <input v-else v-model="editForm.date" type="date" class="w-full md:w-32 p-2 border-solid rounded-md bg-gray-400">
+              </div>
+              
+              <div class="flex flex-col">
+                <span v-if="editingId !== record.id" class="w-full md:w-32"> 金額:{{ record.type === '收入' ? '+' : '-' }}{{ record.amount }} </span>
+                <input v-else v-model="editForm.amount" type="number" class="w-full md:w-32 p-2 border-solid rounded-md bg-gray-400">
+              </div>
+              
+              <div class="flex flex-col">
+                <span v-if="editingId !== record.id" class="w-full md:w-32"> 類型:{{ record.type }} </span>
+                <select v-else v-model="editForm.type" class="w-full md:w-32 p-2 border-solid rounded-md bg-gray-400">
+                  <option value="收入">收入</option>
+                  <option value="支出">支出</option>
+                </select>
+              </div>
+              
+              <div class="flex flex-col">
+                <span v-if="editingId !== record.id" class="w-full md:w-32"> 項目名稱:{{ record.name }} </span>
+                <input v-else v-model="editForm.name" type="text" class="w-full md:w-32 p-2 border-solid rounded-md bg-gray-400">
+              </div>
+              
+              <div class="flex flex-col">
+                <span v-if="editingId !== record.id" class="w-full md:w-32"> 類別:{{ record.category }} </span>
+                <select v-else v-model="editForm.category" class="w-full md:w-32 p-2 border-solid rounded-md bg-gray-400">
+                  <option v-for="option in categoryOptions" :key="option" :value="option">
+                    {{ option }}
+                  </option>
+                </select>
+              </div>
+              
+              <div class="flex flex-col">
+                <span class="w-full md:w-32">帳戶:{{ record.account }}</span>
+              </div>
+            </div>
             
-            <span v-if="editingId !== record.id" class="w-32"> 金額:{{ record.type === '收入' ? '+' : '-' }}{{ record.amount }} </span>
-            <input v-else v-model="editForm.amount" type="number" class="w-32 p-2 border-solid rounded-md bg-gray-400">
-            
-            <span v-if="editingId !== record.id" class="w-32"> 類型:{{ record.type }} </span>
-            <select v-else v-model="editForm.type" class="w-32 p-2 border-solid rounded-md bg-gray-400">
-              <option value="收入">收入</option>
-              <option value="支出">支出</option>
-            </select>
-            
-            <span v-if="editingId !== record.id" class="w-32"> 項目名稱:{{ record.name }} </span>
-            <input v-else v-model="editForm.name" type="text" class="w-32 p-2 border-solid rounded-md bg-gray-400">
-            
-            <span v-if="editingId !== record.id" class="w-32"> 類別:{{ record.category }} </span>
-            <select v-else v-model="editForm.category" class="w-32 p-2 border-solid rounded-md bg-gray-400">
-              <option v-for="option in categoryOptions" :key="option" :value="option">
-                {{ option }}
-              </option>
-            </select>
-            
-            <span class="w-32">帳戶:{{ record.account }}</span>
-            
-            <div class="flex gap-2">
+            <div class="flex gap-2 w-full md:w-auto">
               <button v-if="editingId !== record.id" 
-                class="p-3 border-solid rounded-md bg-gray-400 hover:bg-slate-600"
+                class="p-3 border-solid rounded-md bg-gray-400 hover:bg-slate-600 w-full md:w-auto"
                 @click="startEdit(record)">編輯</button>
               <button v-else 
-                class="p-3 border-solid rounded-md bg-green-400 hover:bg-green-600"
+                class="p-3 border-solid rounded-md bg-green-400 hover:bg-green-600 w-full md:w-auto"
                 @click="saveEdit(record.id)">儲存</button>
               <button v-if="editingId !== record.id"
-                class="p-3 border-solid rounded-md bg-gray-400 hover:bg-slate-600"
+                class="p-3 border-solid rounded-md bg-gray-400 hover:bg-slate-600 w-full md:w-auto"
                 @click="deleteRecord(record.id)">刪除</button>
               <button v-else
-                class="p-3 border-solid rounded-md bg-red-400 hover:bg-red-600"
+                class="p-3 border-solid rounded-md bg-red-400 hover:bg-red-600 w-full md:w-auto"
                 @click="cancelEdit">取消</button>
             </div>
           </div>

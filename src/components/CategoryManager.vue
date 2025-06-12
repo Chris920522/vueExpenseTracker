@@ -73,7 +73,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-
+//接收類別管理
 const props = defineProps({
   isOpen: Boolean,
   incomeCategories: Array,
@@ -84,8 +84,11 @@ const emit = defineEmits(['update:isOpen', 'update:incomeCategories', 'update:ex
 
 const selectedType = ref('收入');
 const newCategory = ref('');
+//控制編輯類別的彈出視窗的變數
 const isEditing = ref(false);
+//編輯類別的變數
 const editCategoryName = ref('');
+//編輯類別的變數
 const currentCategory = ref('');
 
 // 預設類別
@@ -126,13 +129,13 @@ function addCategory() {
 
   newCategory.value = '';
 }
-
+//開始編輯
 function startEdit(category) {
   currentCategory.value = category;
   editCategoryName.value = category;
   isEditing.value = true;
 }
-
+//儲存編輯
 function saveEdit() {
   if (editCategoryName.value.trim() === '') {
     alert('請輸入類別名稱');
@@ -172,7 +175,7 @@ function saveEdit() {
 
   isEditing.value = false;
 }
-
+//取消編輯
 function cancelEdit() {
   isEditing.value = false;
   editCategoryName.value = '';
