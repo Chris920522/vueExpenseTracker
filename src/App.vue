@@ -27,7 +27,7 @@ import { ref } from 'vue'
 import Sidebar from './components/sideBar.vue'
 import Addcategory from './components/addCategory.vue'
 import Addaccount from './components/addAccount.vue'
-
+//Sidebar、Addcategory、Addaccount都是在每頁都會顯示，所以直接在App中引入。
 const sidebar = ref(null)
 const addCategory = ref(null)
 const addAccount = ref(null)
